@@ -52,3 +52,16 @@ class TestUserEdit(BaseCase):
             new_name,
             "Wrong name of the user after edit"
         )
+
+
+    def test_edit_user_when_not_authorized(self):
+        new_name = "Changed Name"
+        user_id = 2
+
+        response = MyRequests.put(
+            f"/user/{user_id}",
+            data={"firstName": new_name}
+        )
+
+        Assertions.assert_code_status(response, 400)
+        assert response.content.decode("utf-8") == f"Auth token not supplied", f"Unexpected response content '{response.content}'"
