@@ -3,6 +3,8 @@ from lib.base_case import BaseCase
 from lib.assertions import Assertions
 import pytest
 import time
+import random
+import string
 
 keys_list = ['password',
             'username',
@@ -50,3 +52,15 @@ class TestUserRegister(BaseCase):
 
         Assertions.assert_code_status(response, 400)
         assert response.content.decode("utf-8") == f"The following required params are missed: {key}", f"Unexpected response content '{response.content}'"
+
+    def test_create_user_with_one_symbol_name(self):
+
+        short_name = random.choice(string.ascii_letters)
+
+        data = self.prepare_registration_data()
+        data['firstName'] = short_name
+
+        response = MyRequests.post("/user/", data=data)
+
+        Assertions.assert_code_status(response, 400)
+        assert response.content.decode("utf-8") == f"The value of 'firstName' field is too short", f"Unexpected response content '{response.content}'"

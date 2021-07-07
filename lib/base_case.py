@@ -40,7 +40,6 @@ class BaseCase:
 
     def prepare_incomplete_registration_data(self, excluded_parameter):
 
- #       if (excluded_parameter != 'email'):
         base_part = "learnqa"
         domain = "example.com"
         random_part = datetime.now().strftime("%m%d%Y%H%M%S")
