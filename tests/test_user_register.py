@@ -19,4 +19,16 @@ class TestUserRegister(BaseCase):
         response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_code_status(response, 400)
-        assert response.content.decode("utf-8") == f"Users with email '{email}' already exists", f"Unepected response content '{response.content}'"
+        assert response.content.decode("utf-8") == f"Users with email '{email}' already exists", f"Unexpected response content '{response.content}'"
+
+    def test_create_user_with_incorrect_email(self):
+        # create user with incorrect email format (email without '@' sign)
+        email = 'vinkotovexample.com'
+        data = self.prepare_registration_data(email)
+
+        response = MyRequests.post("/user/", data=data)
+
+        Assertions.assert_code_status(response, 400)
+        assert response.content.decode("utf-8") == f"Invalid email format", f"Unexpected response content '{response.content}'"
+
+
