@@ -37,3 +37,23 @@ class BaseCase:
             'lastName': 'learnqa',
             'email': email
         }
+
+    def prepare_incomplete_registration_data(self, excluded_parameter):
+
+ #       if (excluded_parameter != 'email'):
+        base_part = "learnqa"
+        domain = "example.com"
+        random_part = datetime.now().strftime("%m%d%Y%H%M%S")
+        email = f"{base_part}{random_part}@{domain}"
+
+        data = {
+            'password': '123',
+            'username': 'learnqa',
+            'firstName': 'learnqa',
+            'lastName': 'learnqa',
+            'email': email
+        }
+
+        del data[excluded_parameter]
+
+        return data

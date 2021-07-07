@@ -1,6 +1,14 @@
 from lib.my_requests import MyRequests
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
+import pytest
+import time
+
+keys_list = ['password',
+            'username',
+            'firstName',
+            'lastName',
+             'email']
 
 class TestUserRegister(BaseCase):
 
@@ -31,4 +39,14 @@ class TestUserRegister(BaseCase):
         Assertions.assert_code_status(response, 400)
         assert response.content.decode("utf-8") == f"Invalid email format", f"Unexpected response content '{response.content}'"
 
+    @pytest.mark.parametrize('key', keys_list)
+    def test_create_user_without_one_field(self, key):
+        #data = self.prepare_registration_data()
 
+        incomplete_data = self.prepare_incomplete_registration_data(key)
+        time.sleep(1)
+
+        response = MyRequests.post("/user/", data=incomplete_data)
+
+        Assertions.assert_code_status(response, 400)
+        assert response.content.decode("utf-8") == f"The following required params are missed: {key}", f"Unexpected response content '{response.content}'"
