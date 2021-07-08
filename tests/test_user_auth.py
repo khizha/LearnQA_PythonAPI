@@ -28,11 +28,12 @@ class TestUserAuth(BaseCase):
 
     @allure.description("This test successfully authorizes user by email and password")
     def test_auth_user(self):
-        response2 = MyRequests.get(
-            "/user/auth",
-            headers={"x-csrf-token": self.token},
-            cookies={"auth_sid": self.auth_sid}
-        )
+        with allure.step("Send authorization request with full parameters list:"):
+            response2 = MyRequests.get(
+                "/user/auth",
+                headers={"x-csrf-token": self.token},
+                cookies={"auth_sid": self.auth_sid}
+            )
 
         Assertions.assert_json_value_by_name(
             response2,
@@ -42,18 +43,21 @@ class TestUserAuth(BaseCase):
         )
 
     @allure.description("This test checks authorization status w/o sending auth cookie or token")
+    @allure.story(f"Run test for every parameter from 'exclude_params' list: {exclude_params}")
     @pytest.mark.parametrize('condition', exclude_params)
     def test_negative_auth_check(self, condition):
         if condition == "no_cookie":
-            response2 = MyRequests.get(
-                "/user/auth",
-                headers={"x-csrf-token": self.token}
-             )
+            with allure.step("Send authorization request without cookie parameter:"):
+                response2 = MyRequests.get(
+                    "/user/auth",
+                    headers={"x-csrf-token": self.token}
+                 )
         else:
-            response2 = MyRequests.get(
-                "/user/auth",
-                cookies={"auth_sid": self.auth_sid}
-             )
+            with allure.step("Send authorization request without headers parameter:"):
+                response2 = MyRequests.get(
+                    "/user/auth",
+                    cookies={"auth_sid": self.auth_sid}
+                 )
 
         Assertions.assert_json_value_by_name(
             response2,
