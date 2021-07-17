@@ -94,6 +94,12 @@ class TestUserEdit(BaseCase):
         with allure.step(f"Register another user:"):
             response11 = MyRequests.post("/user/", data=register_data)
 
+        # get data of the second created user for future verification
+        second_created_user_name = register_data["firstName"]
+        second_created_user_email = register_data["email"]
+        second_created_user_password = register_data["password"]
+
+
         Assertions.assert_code_status(response11, 200)
         Assertions.assert_json_has_key(response11, "id")
 
@@ -114,7 +120,7 @@ class TestUserEdit(BaseCase):
         # EDIT
         new_name = "Changed Name"
 
-        print(user_id_two)
+        #print(user_id_two)
 
         with allure.step(f"Try to change the firstName parameter of the second created user:"):
             response3 = MyRequests.put(
@@ -128,6 +134,33 @@ class TestUserEdit(BaseCase):
 
         Assertions.assert_code_status(response3, 200)
         assert response3.content.decode("utf-8") == f"", f"Unexpected response content '{response3.content}'"
+
+        # check that the firstName of the second crested user (second_created_user_name) has not changed
+        # LOGIN as the second created user
+        second_created_user_login_data = {
+            'email': second_created_user_email,
+            'password': second_created_user_password
+        }
+
+        with allure.step(f"Login as the second created user:"):
+            response4 = MyRequests.post("/user/login", data=second_created_user_login_data)
+
+        Assertions.assert_code_status(response4, 200)
+
+        second_created_user_auth_sid = self.get_cookie(response4, "auth_sid")
+        second_created_user_token = self.get_header(response4, "x-csrf-token")
+
+
+        with allure.step(f"Get second created user data to check that the firstName of this user {second_created_user_name} has not changed:"):
+            response5 = MyRequests.get(f"/user/{user_id_two}",
+                                       headers={"x-csrf-token": second_created_user_token},
+                                       cookies={"auth_sid": second_created_user_auth_sid}
+                                       )
+
+        Assertions.assert_code_status(response5, 200)
+        assert self.get_json_value(response5, "firstName") == second_created_user_name, f"The name of the second created user changed unexpectedly: old name was '{second_created_user_name}'."
+
+
 
     @allure.description("This test tries to edit email of the just created user with a wrong-formatted email.")
     def test_edit_email_of_just_created_user(self):
