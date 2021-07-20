@@ -63,3 +63,9 @@ class TestUserGet(BaseCase):
 
         expected_fields = ["username"]
         Assertions.assert_json_has_keys(response2, expected_fields)
+
+        # check that we cannot get the other user data fields (except for 'username')
+        Assertions.assert_json_has_not_key(response2, "email")
+        Assertions.assert_json_has_not_key(response2, "firstName")
+        Assertions.assert_json_has_not_key(response2, "lastName")
+        Assertions.assert_json_has_not_key(response2, "password")
