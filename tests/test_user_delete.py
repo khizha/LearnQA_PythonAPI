@@ -96,30 +96,45 @@ class TestUserDelete(BaseCase):
         auth_sid = self.get_cookie(response11, "auth_sid")
         token = self.get_header(response11, "x-csrf-token")
 
-        # login as user with id =2
-        login_data = {
-            'email': 'vinkotov@example.com',
-            'password': '1234'
-        }
+        # register one more user
+        with allure.step("Register one more user"):
+            register_data_2 = self.prepare_registration_data()
+            response2 = MyRequests.post("/user/", data=register_data_2)
 
-        with allure.step("Login as user with id =2"):
-            response2 = MyRequests.post("/user/login", data=login_data)
         Assertions.assert_code_status(response2, 200)
+        Assertions.assert_json_has_key(response2, "id")
 
-        # try to delete the created user
+        email2 = register_data_2["email"]
+        password2 = register_data_2["password"]
+        user_id2 = self.get_json_value(response2, "id")
+
+        # login as the second created user
+        with allure.step("Login as the second created user"):
+            response21 = MyRequests.post("/user/login", data=register_data_2)
+            Assertions.assert_code_status(response21, 200)
+
+
+        # try to delete the first created user
         data = {
             'email': email,
             'password': password
 
         }
 
-        with allure.step("Try to delete the created user"):
+        with allure.step("Try to delete the first created user"):
             response3 = MyRequests.delete(f"/user/{user_id}",
                                         data=data,
                                         headers={"x-csrf-token": token},
                                         cookies={"auth_sid": auth_sid})
 
-
         Assertions.assert_code_status(response3, 200)
         assert response3.content.decode("utf-8") == f"", f"Unexpected response content '{response3.content}'"
 
+        # check that the user 'user_id' was deleted
+        response4 = MyRequests.get(f"/user/{user_id}",
+                                       headers={"x-csrf-token": token},
+                                       cookies={"auth_sid": auth_sid})
+
+        Assertions.assert_code_status(response4, 404)
+        assert response4.content.decode(
+            "utf-8") == f"User not found", f"Unexpected response content '{response4.content}'"
